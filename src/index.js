@@ -1,12 +1,18 @@
 // index.js
 // This is the main entry point of our application
 
+require('dotenv').config();
+const db = require('./db');
 const express = require('express');
 const {ApolloServer, gql} = require('apollo-server-express');
+const models = require('./models');
 
 
 // run server on port in .env or port 4k
 const port = process.env.PORT || 4000;
+//store db_host value as variable
+const DB_HOST = process.env.DB_HOST;
+
 
 let notes = [
     {id: '1', content: 'This note', author: 'Tony'},
@@ -34,7 +40,9 @@ type Mutation {
 const resolvers = {
     Query:{
         hellnoo: () => 'Hell noo worlddd !',
-        notes: () => notes,
+        notes: async () => {
+            return await models.Note.find();
+        },
         note: (parent, args) => {
             return notes.find(note => note.id ===args.id);
         }
@@ -54,6 +62,9 @@ const resolvers = {
 
 
 const app = express();
+
+//connect to database
+db.connect(DB_HOST);
 
 // Apollo server setup
 const server = new ApolloServer ({ typeDefs, resolvers});
