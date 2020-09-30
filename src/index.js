@@ -2,9 +2,10 @@
 // This is the main entry point of our application
 
 require('dotenv').config();
-const db = require('./db');
 const express = require('express');
 const {ApolloServer, gql} = require('apollo-server-express');
+
+const db = require('./db');
 const models = require('./models');
 
 
@@ -12,12 +13,6 @@ const models = require('./models');
 const port = process.env.PORT || 4000;
 //store db_host value as variable
 const DB_HOST = process.env.DB_HOST;
-
-
-let notes = [
-    {id: '1', content: 'This note', author: 'Tony'},
-    {id: '2', content: 'This is a note', author: 'Anna'},
-    {id: '3', content: 'This another note', author: 'Lebowski'}];
 
     
 //construct schema, using GraphQL
@@ -43,19 +38,17 @@ const resolvers = {
         notes: async () => {
             return await models.Note.find();
         },
-        note: (parent, args) => {
-            return notes.find(note => note.id ===args.id);
+        note: async (parent, args) => {
+            return await models.Note.findById(args.id);
         }
     },
     Mutation: {
-        newNote: (parent,args) => {
-            let noteValue = {
-                id: String(notes.length +1),
+        newNote: async (parent,args) => {
+            return await models.Note.create({
                 content: args.content,
                 author: 'Tonik Profik'
-            };
-            notes.push(noteValue);
-            return noteValue;
+            });
+            
         }
     }
 };

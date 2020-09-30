@@ -4,4 +4,4 @@ const models = {
     Note
 };
 
-module.exports(models);
+module.exports = models;
