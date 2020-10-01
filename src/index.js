@@ -3,55 +3,21 @@
 
 require('dotenv').config();
 const express = require('express');
-const {ApolloServer, gql} = require('apollo-server-express');
+const {ApolloServer} = require('apollo-server-express');
 
+//local module imports
 const db = require('./db');
 const models = require('./models');
+//construct schema, using GraphQL
+const typeDefs = require('./schema');
+//provide resolver functions for our schema fields
+const resolvers = require('./resolvers');
 
 
 // run server on port in .env or port 4k
 const port = process.env.PORT || 4000;
 //store db_host value as variable
 const DB_HOST = process.env.DB_HOST;
-
-    
-//construct schema, using GraphQL
-const typeDefs = gql`
-type Query {
-    hellnoo:String!
-    notes: [Note!]!
-    note(id: ID!): Note!
-},
-type Note {
-    id: ID!
-    content: String!
-    author: String!
-},
-type Mutation {
-    newNote(content: String!): Note!
-}`;
-
-//provide resolver functions for our schema fields
-const resolvers = {
-    Query:{
-        hellnoo: () => 'Hell noo worlddd !',
-        notes: async () => {
-            return await models.Note.find();
-        },
-        note: async (parent, args) => {
-            return await models.Note.findById(args.id);
-        }
-    },
-    Mutation: {
-        newNote: async (parent,args) => {
-            return await models.Note.create({
-                content: args.content,
-                author: 'Tonik Profik'
-            });
-            
-        }
-    }
-};
 
 
 const app = express();
@@ -60,7 +26,12 @@ const app = express();
 db.connect(DB_HOST);
 
 // Apollo server setup
-const server = new ApolloServer ({ typeDefs, resolvers});
+const server = new ApolloServer ({ 
+    typeDefs, resolvers,
+    context: () =>{
+        // add the db models to context
+        return {models};
+    }});
 
 // apply the Apollo GraphQl middleware and set path to /api
 server.applyMiddleware({ app, path: '/api'});
