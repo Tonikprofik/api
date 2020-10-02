@@ -1,4 +1,4 @@
-const { models } = require("mongoose")
+//const { models } = require("mongoose");
 
 module.exports = {
     notes: async (parent, args, {models}) => {
@@ -7,4 +7,4 @@ module.exports = {
     note: async (parent,args, {models}) => {
         return await models.Note.findById(args.id);
     }
-}
+};
