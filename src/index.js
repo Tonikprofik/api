@@ -13,6 +13,18 @@ const typeDefs = require('./schema');
 //provide resolver functions for our schema fields
 const resolvers = require('./resolvers');
 
+const jwt = require('jsonwebtoken');
+// get the user info from a JWT
+const getUser = token => {
+  if (token) {
+    try {
+      // return the user info from token
+      return jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+      throw new Error('Sesson not valiiid');
+    }
+  }
+}
 
 // run server on port in .env or port 4k
 const port = process.env.PORT || 4000;
@@ -28,9 +40,15 @@ db.connect(DB_HOST);
 // Apollo server setup
 const server = new ApolloServer ({ 
     typeDefs, resolvers,
-    context: () =>{
-        // add the db models to context
-        return {models};
+    context: ({req}) =>{
+      //get the user token from the headers
+      const token = req.headers.authorization;
+      //try retrieving user with token
+      const user = getUser(token);
+      //temporarily, log user in console
+      console.log(user);
+      // add the db models to context
+      return {models,user};
     }});
 
 // apply the Apollo GraphQl middleware and set path to /api
