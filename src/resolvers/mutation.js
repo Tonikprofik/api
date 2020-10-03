@@ -1,5 +1,7 @@
+const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+
 const {
     AuthenticationError,
     ForbiddenError
@@ -12,13 +14,27 @@ const { use } = require('passport');
 
 
 module.exports = {
-    newNote: async (parent,args, {models}) => {
+    newNote: async (parent,args, {models, user}) => {
+        if (!user) {
+            throw new AuthenticationError('Must signed in you must be')
+        }
+
         return await models.Note.create({
             content: args.content,
-            author: 'Toniiik'
+            author: mongoose.Types.ObjectId(user.id)
         });
     },
-    deleteNote: async (parent, id, {models}) => {
+    deleteNote: async (parent, id, {models, user}) => {
+        //if not a user, throw auth err
+        if (!user) {
+            throw AuthenticationError('Must signed in you must be to delete');
+        }
+        // if note owner and current user dont match, forbidden err
+        const note = await models.Note.findById(id);
+        if (note && String(note.author) !== user.id) {
+            throw new ForbiddenError("No permissions you have to delete the note");
+        }
+
         try {
             await models.Note.findOneAndRemove({_id: id});
             return true;
