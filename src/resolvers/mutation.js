@@ -42,9 +42,19 @@ module.exports = {
             return false;
         }
     },
-    updateNote: async (parent, {content, id}, {models}) => {
-        try {
-            return await models.Note.findOneAndUpdate(
+    updateNote: async (parent, {content, id}, {models, user}) => {
+        // if not a user, throw authentication err
+        if (!user) {
+            throw AuthenticationError('signed in you must be to update a note');
+        }
+        
+        const note = await models.Note.findById(id);
+        //if note owner and current user dont motch, throw forbidden err
+        if (note && String(note.author) !==user.id) {
+            throw ForbiddenError('no permissions to update note');
+        }
+        //update the note in db and return updated note
+        return await models.Note.findOneAndUpdate(
                 {
                     _id: id,
                 },
@@ -56,9 +66,7 @@ module.exports = {
                 {
                     new: true
                 });
-        } catch (error) {
-            throw new Error('error updatin');
-        }
+        
     },
     signUp: async (parent, {username, email, password}, {models}) => {
         //normalize email
