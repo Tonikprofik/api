@@ -12,6 +12,15 @@ const models = require('./models');
 const typeDefs = require('./schema');
 //provide resolver functions for our schema fields
 const resolvers = require('./resolvers');
+//security middleware
+const helmet = require('helmet');
+//added cors the middleware 
+const cors = require('cors');
+
+//limit query depth, complexity
+const depthLimit = require('graphql-depth-limit');
+const { createComplexityLimitRule} = require('graphql-validation-complexity');
+
 
 const jwt = require('jsonwebtoken');
 // get the user info from a JWT
@@ -33,13 +42,16 @@ const DB_HOST = process.env.DB_HOST;
 
 
 const app = express();
-
 //connect to database
 db.connect(DB_HOST);
+app.use(cors());
+app.use(helmet());
+
 
 // Apollo server setup
 const server = new ApolloServer ({ 
     typeDefs, resolvers,
+    validationRules = [depthLimit(5), createComplexityLimitRule(1000)],
     context: ({req}) =>{
       //get the user token from the headers
       const token = req.headers.authorization;
