@@ -51,7 +51,7 @@ app.use(helmet());
 // Apollo server setup
 const server = new ApolloServer ({ 
     typeDefs, resolvers,
-    validationRules = [depthLimit(5), createComplexityLimitRule(1000)],
+    validationRules: [depthLimit(5), createComplexityLimitRule(1000)],
     context: ({req}) =>{
       //get the user token from the headers
       const token = req.headers.authorization;
