@@ -6,7 +6,7 @@ module.exports = gql`
     type Note {
         id: ID!
         content: String!
-        author: String!    
+        author: User!    
         createdAt: DateTime!
         updatedAt: DateTime!
         favoriteCount: Int!
@@ -19,7 +19,7 @@ module.exports = gql`
         email: String!
         avatar: String
         notes: [Note!]!
-        favorited: [Note!]!
+        favorites: [Note!]!
     }
     
     type Query {

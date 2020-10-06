@@ -8,8 +8,8 @@ module.exports = {
         return await models.Note.findById(args.id);
     },
     //find a user given their username
-    user: async (parent, {username}, {models}) => {
-        return await models.User.findOne({ username });
+    user: async (parent, args, {models}) => { //(args, {username})
+        return await models.User.findOne({ username: args.username }); //.findOne({ username })
     },
     users: async (parent, args, {models}) => {
         //find all users
